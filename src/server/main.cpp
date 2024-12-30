@@ -3,11 +3,10 @@
 
 int main(int argc, char* argv[]){
 	net::Server server(56744);
-	try{
-		server.start();	
-	}
-	catch(std::exception& ex){
-		std::cerr << ex.what() << std::endl;
-	}
+	server.start();	
+
+	getchar(); //do something
+
+	server.stop();
 	return 0;
 }

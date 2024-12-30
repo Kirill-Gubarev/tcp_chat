@@ -1,7 +1,7 @@
 #include "client.h"
 #include <iostream>
 
-net::Client::Client(string host, string port):
+net::Client::Client(const string& host, const string& port):
 	io_context(), resolver(io_context),
 	host(host), port(port)
 {
@@ -11,9 +11,22 @@ net::Client::Client(string host, string port):
 net::Client::~Client(){}
 
 void net::Client::start(){
-	std::cout << "starting the client..." << std::endl;	
+	if(is_running) return;
+	is_running = true;
+
+	std::cout << "starting the client...\n";	
+
 	start_connect();	
-	io_context.run();
+	io_context_thread = std::thread(&asio::io_context::run, &io_context);
+	io_context_thread.detach();
+}
+void net::Client::stop(){
+	if(!is_running) return;
+	is_running = false;
+
+	std::cout << "stopping the client...\n";
+
+	io_context.stop();
 }
 void net::Client::start_connect(){
 	auto socket = std::make_shared<tcp::socket>(resolver.get_executor());
@@ -24,7 +37,7 @@ void net::Client::start_connect(){
 				start_resolved_connect(socket, results);
             }
 			else{
-                std::cerr << "resolving error: " << ec.message() << "\n";
+                std::cout << "resolving error: " + ec.message() + '\n';
             }
         }
     );
@@ -36,10 +49,10 @@ void net::Client::start_resolved_connect(socket_ptr socket,
 	asio::async_connect(*socket, results,
 		[this, socket](const asio::error_code& ec, const tcp::endpoint& endpoint) {
 			if (!ec) {
-				std::cout << "connected to: " << endpoint << "\n";
+				std::cout << "connected!\n";
 			}
 			else {
-				std::cerr << "connecting error: " << ec.message() << "\n";
+				std::cout << "connecting error: " + ec.message() + '\n';
 			}
 		}
 	);
