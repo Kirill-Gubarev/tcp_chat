@@ -1,21 +1,22 @@
 #include "server.h"
 #include <iostream>
 
-net::Server::Server(uint16_t port):
-	io_context(), acceptor(io_context),
-	port(port)
+net::Server::Server() noexcept:
+	io_context(), acceptor(io_context)
 {
 
 }
 
-net::Server::~Server(){}
+net::Server::~Server(){
+	stop();
+}
 
-void net::Server::start(){
+void net::Server::start(uint16_t port){
 	if(is_running) return;
 	is_running = true;
 	std::cout << "starting the server...\n";
 
-	acceptor_init();
+	acceptor_init(port);
 	start_accept();
 	io_context_thread = std::thread(&asio::io_context::run, &io_context);
 	io_context_thread.detach();
@@ -32,7 +33,7 @@ void net::Server::stop(const string& message){
 	stop();
 }
 
-void net::Server::acceptor_init(){
+void net::Server::acceptor_init(uint16_t port){
 	asio::error_code ec;
 		
 	acceptor.open(tcp::v4(), ec);
@@ -45,12 +46,11 @@ void net::Server::acceptor_init(){
 	if(ec) stop("listening connection error: " + ec.message());
 }
 void net::Server::start_accept(){
-	auto socket = std::make_shared<tcp::socket>(io_context);
-
-	acceptor.async_accept(*socket, 
-		[this, socket](const asio::error_code& ec){
+	acceptor.async_accept(
+		[this](const asio::error_code& ec, tcp::socket socket){
 			if(!ec){
 				std::cout << "accepted new connection!\n";
+				Session(std::move(socket)).start();
 			}
 			else{
 				std::cout << "error accepting: " + ec.message() + '\n';

@@ -1,5 +1,6 @@
 PROJECT(client)
 ADD_EXECUTABLE(${PROJECT_NAME}
 	main.cpp
-	client.cpp		client.h
+	client.cpp			client.h
+	../utils.cpp		../utils.h
 )
