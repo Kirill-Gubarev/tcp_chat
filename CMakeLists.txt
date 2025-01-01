@@ -4,7 +4,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 INCLUDE_DIRECTORIES(
 	src
-	external/asio/include
+	external/asio/asio/include
 )
 
 ADD_SUBDIRECTORY(src/client)
