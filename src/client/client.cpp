@@ -2,7 +2,7 @@
 #include <iostream>
 
 net::Client::Client()noexcept:
-	io_context(), resolver(io_context)
+	io_context(), resolver(io_context), session(io_context)
 {
 
 }
@@ -30,12 +30,10 @@ void net::Client::stop(){
 	io_context.stop();
 }
 void net::Client::start_connect(const string& host, const string& port){
-	auto socket = std::make_shared<tcp::socket>(resolver.get_executor());
-
     resolver.async_resolve(host, port, 
-        [this, socket](const asio::error_code& ec, tcp::resolver::results_type results) {
+        [this](const asio::error_code& ec, tcp::resolver::results_type results) {
             if(!ec){
-				start_resolved_connect(socket, results);
+				start_resolved_connect(results);
             }
 			else{
                 std::cout << "resolving error: " + ec.message() + '\n';
@@ -44,11 +42,9 @@ void net::Client::start_connect(const string& host, const string& port){
     );
 }
 
-void net::Client::start_resolved_connect(socket_ptr socket, 
-			tcp::resolver::results_type results)
-{
-	asio::async_connect(*socket, results,
-		[this, socket](const asio::error_code& ec, const tcp::endpoint& endpoint) {
+void net::Client::start_resolved_connect(tcp::resolver::results_type results){
+	asio::async_connect(session.get_socket(), results,
+		[this](const asio::error_code& ec, const tcp::endpoint& endpoint) {
 			if (!ec) {
 				std::cout << "connected!\n";
 			}
@@ -57,4 +53,8 @@ void net::Client::start_resolved_connect(socket_ptr socket,
 			}
 		}
 	);
+}
+
+void net::Client::send(const string& message){
+	session.start_write(message);
 }

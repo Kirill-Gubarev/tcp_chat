@@ -5,17 +5,18 @@
 
 #include <asio.hpp>
 #include <thread>
+#include "session.h"
 
 namespace net{
 	using std::string;
 	using asio::ip::tcp;
 	using std::runtime_error;
-	using socket_ptr = std::shared_ptr<tcp::socket>;
 
 class Client{
 private:
 	asio::io_context io_context;	
 	tcp::resolver resolver;
+	Session session;
 	std::thread io_context_thread;
 	bool is_running = false;
 
@@ -27,11 +28,11 @@ public:
 
 	void start(const string& host, const string& port);
 	void stop();
+	void send(const string& message);
 
 private:
 	void start_connect(const string& host, const string& port);
-	void inline start_resolved_connect(socket_ptr socket, 
-			tcp::resolver::results_type results);
+	void inline start_resolved_connect(tcp::resolver::results_type results);
 };
 }
 

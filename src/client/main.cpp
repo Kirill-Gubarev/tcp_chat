@@ -14,6 +14,18 @@ int command_callback(const std::vector<std::string>& args){
 			std::cout << args[i] << ' ';
 		std::cout << '\n';
 	}
+	else if(args[0] == "send"){
+		std::string message = "";
+		for(size_t i = 1; i < args.size(); ++i){
+			message += args[i];
+			if(i != args.size() - 1)
+				message += ' ';
+			else
+				message += '\n';
+		}
+
+		client.send(message);
+	}
 	else{
 		std::cout << "command not found: " << args[0] << '\n';
 	}

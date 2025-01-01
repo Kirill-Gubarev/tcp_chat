@@ -50,7 +50,8 @@ void net::Server::start_accept(){
 		[this](const asio::error_code& ec, tcp::socket socket){
 			if(!ec){
 				std::cout << "accepted new connection!\n";
-				Session(std::move(socket)).start();
+				sessions.emplace_back(std::make_unique<Session>(std::move(socket)));
+				sessions.back()->start();
 			}
 			else{
 				std::cout << "error accepting: " + ec.message() + '\n';

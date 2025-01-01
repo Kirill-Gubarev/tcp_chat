@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <thread>
 #include "session.h"
+#include <vector>
 
 namespace net{
 	using asio::ip::tcp;
@@ -19,6 +20,7 @@ private:
 	tcp::acceptor acceptor;
 	std::thread io_context_thread;
 	bool is_running = false;
+	std::vector<std::unique_ptr<Session>> sessions;
 
 public:
 	explicit Server() noexcept;
